@@ -1,0 +1,29 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local audio recordings / private datasets
+data/original/
+data/challenge/
+
+# Downloaded datasets
+data/external/
+
+# Generated prediction/output audio
+outputs/audio/
+*.wav
+
+# Model checkpoints
+models/
+*.pt
+*.pth
+
+# Generated logs/plots
+outputs/logs/
+outputs/plots/
+
+# IDE
+.vscode/
