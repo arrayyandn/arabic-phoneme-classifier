@@ -1,4 +1,4 @@
-from dataset import CLASSES, ArabicLetterDataset
+from ml.dataset import CLASSES, ArabicLetterDataset
 
 dataset = ArabicLetterDataset()
 

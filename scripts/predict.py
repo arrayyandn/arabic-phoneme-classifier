@@ -7,6 +7,7 @@ from scipy.io.wavfile import write
 
 from ml.audio_processing import (
     SAMPLE_RATE,
+    TARGET_DURATION,
     load_wav,
     trim_and_center_waveform,
     waveform_to_mel,
@@ -17,7 +18,7 @@ from ml.model import ArabicLetterCNN
 MODEL_FILE = Path("models/latest/arabic_letter_cnn.pt")
 RECORDING_FILE = Path("outputs/audio/prediction.wav")
 
-DURATION = 2
+DURATION = TARGET_DURATION
 
 
 ARABIC = {
@@ -52,6 +53,11 @@ def record_audio():
     )
 
     sd.wait()
+
+    RECORDING_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     write(
         RECORDING_FILE,

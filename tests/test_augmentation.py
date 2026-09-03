@@ -1,6 +1,6 @@
 import torch
 
-from dataset import ArabicLetterDataset
+from ml.dataset import ArabicLetterDataset
 
 training_dataset = ArabicLetterDataset(augment=True)
 

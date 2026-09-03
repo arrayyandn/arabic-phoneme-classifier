@@ -5,7 +5,7 @@ from ml.data_loaders import (
     TRAIN_PER_CLASS,
     VALIDATION_PER_CLASS,
 )
-from dataset import (
+from ml.dataset import (
     CLASSES,
     ArabicLetterDataset,
 )

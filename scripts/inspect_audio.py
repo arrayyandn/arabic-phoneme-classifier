@@ -2,7 +2,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-from audio_processing import (
+from ml.audio_processing import (
     SAMPLE_RATE,
     load_wav,
     trim_and_center_waveform,
@@ -10,13 +10,13 @@ from audio_processing import (
 )
 
 AUDIO_FILES = [
-    Path(r"data\qaf\qaf_005.wav"),
-    Path(r"data\taa_emphatic\taa_emphatic_013.wav"),
-    Path(r"data\taa_emphatic\taa_emphatic_005.wav"),
-    Path(r"data\kaf\kaf_012.wav"),
-    Path(r"data\kaf\kaf_004.wav"),
-    Path(r"data\sad\sad_013.wav"),
-    Path(r"data\sad\sad_003.wav"),
+    Path(r"data/original/qaf/qaf_005.wav"),
+    Path(r"data/original/taa_emphatic/taa_emphatic_013.wav"),
+    Path(r"data/original/taa_emphatic/taa_emphatic_005.wav"),
+    Path(r"data/original/kaf/kaf_012.wav"),
+    Path(r"data/original/kaf/kaf_004.wav"),
+    Path(r"data/original/sad/sad_013.wav"),
+    Path(r"data/original/sad/sad_003.wav"),
 ]
 
 

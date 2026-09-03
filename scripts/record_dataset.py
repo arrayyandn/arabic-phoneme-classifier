@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 
 import sounddevice as sd
-from scipy.io.wavfile import read, write
+from scipy.io.wavfile import write
 
 SAMPLE_RATE = 16_000
 DURATION = 1.2
@@ -19,6 +19,7 @@ LETTERS = {
 }
 
 DATA_DIR = Path("data/original")
+
 
 
 def record_audio():
@@ -224,7 +225,10 @@ def record_letter(
 
             
 def main():
-    DATA_DIR.mkdir(exist_ok=True)
+    DATA_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     print()
     print("Arabic ML Letter Dataset Recorder")

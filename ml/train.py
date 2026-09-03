@@ -1,4 +1,5 @@
 import copy
+from pathlib import Path
 
 import torch
 from torch import nn
@@ -6,10 +7,13 @@ from torch import nn
 from ml.data_loaders import create_data_loaders
 from ml.model import ArabicLetterCNN
 
-MAX_EPOCHS = 10000
+MAX_EPOCHS = 200
 LEARNING_RATE = 0.001
 USE_AUGMENTATION = True
-EARLY_STOPPING_PATIENCE = 1000
+EARLY_STOPPING_PATIENCE = 301.
+MODEL_FILE = Path(
+    "models/latest/arabic_letter_cnn.pt"
+)
 
 
 def calculate_accuracy(outputs, labels):
@@ -313,9 +317,14 @@ def main():
     if best_model_state is None:
         raise RuntimeError("No model checkpoint was created.")
 
+    MODEL_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
     torch.save(
         best_model_state,
-        "arabic_letter_cnn.pt",
+        MODEL_FILE,
     )
 
     print()
@@ -326,7 +335,7 @@ def main():
         f"Best validation loss: "
         f"{best_validation_loss:.4f}"
     )
-    print("Best model saved to arabic_letter_cnn.pt")
+    print(f"Best model saved to {MODEL_FILE}")
 
 
 if __name__ == "__main__":

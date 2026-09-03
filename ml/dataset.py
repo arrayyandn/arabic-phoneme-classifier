@@ -1,12 +1,13 @@
 from pathlib import Path
 
-from audio_processing import (
+from torch.utils.data import Dataset
+
+from ml.audio_processing import (
     augment_waveform,
     load_wav,
     trim_and_center_waveform,
     waveform_to_mel,
 )
-from torch.utils.data import Dataset
 
 DATA_DIR = Path("data/original")
 

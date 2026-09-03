@@ -28,8 +28,9 @@ def main():
     # Validation set:
     # allowed to guide model development
     
-    # Test set:
-    # should remain untouched
+    # Legacy test set:
+        # already inspected during development
+        # so it is now only useful for historical comparison
 
     _, validation_loader, _ = create_data_loaders(
         batch_size=4,

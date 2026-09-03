@@ -2,7 +2,7 @@ import random
 
 from torch.utils.data import DataLoader, Subset
 
-from dataset import CLASSES, ArabicLetterDataset
+from ml.dataset import CLASSES, ArabicLetterDataset
 
 RANDOM_SEED = 42
 
@@ -61,7 +61,7 @@ def create_data_loaders(batch_size=4, augment_training=True):
 
         # for example:
         # qaf might correspond to indices 0-14
-        # kad to 15-29, etc.
+        # kaf to 15-29, etc.
 
         class_indices = [
             index
@@ -71,15 +71,17 @@ def create_data_loaders(batch_size=4, augment_training=True):
 
         rng.shuffle(class_indices)
 
-        # First four recordings -> training
+        # First TRAIN_PER_CLASS recordings -> training
 
         train_indices.extend(class_indices[:TRAIN_PER_CLASS])
 
-        # Fifth recording -> validation
+        # Next VALIDATION_PER_CLASS recordings -> validation
 
         validation_indices.extend(
             class_indices[TRAIN_PER_CLASS : TRAIN_PER_CLASS + VALIDATION_PER_CLASS]
         )
+
+        # Everything remaining -> test
 
         test_indices.extend(class_indices[TRAIN_PER_CLASS + VALIDATION_PER_CLASS :])
 
@@ -88,6 +90,8 @@ def create_data_loaders(batch_size=4, augment_training=True):
     test_dataset = Subset(evaluation_source, test_indices)
 
     # batch_size:
+    # With batch_size=4:
+
     # 4 spectrograms
     #       ↓
     # make predictions
@@ -96,16 +100,17 @@ def create_data_loaders(batch_size=4, augment_training=True):
     #       ↓
     # update model
 
-    # Batch 2:
-    # 4 spectrograms
-    #       ↓
-    #       ...
+    # Then the next batch is processed.
 
-    # 24 / 4 = 6 batches
-    # one complete pass through the whole training dataset is called an:
-    # Epoch
+    # One complete pass through all training samples is called an epoch.
     # 1 epoch = CNN has seen all 24 training samples once
     # 50 epochs -> the network has gone through the training set 50 times, adjusting itself gradually.
+
+    # The number of batches depends on:
+        # number of training samples
+        #             ÷
+        #        batch size
+
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 

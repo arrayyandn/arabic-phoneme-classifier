@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn.functional as F
 import torchaudio
@@ -41,14 +42,22 @@ TRIM_MARGIN_SAMPLES = int(
 )
 
 
-# FTT: Fast Fourier Transform
-    #   (It tells us which frequencies are contained in this piece of waveform?)
-    # FTT might discover 200 Hz -> some energy but 500Hz -> lots of energy
-    # But speech changes constantly -> We therefore don't analyse the whole 1.2 seconds at once.
-    # We chop it into lots of overlapping windows:
+# FFT: Fast Fourier Transform
+    # It tells us which frequencies are contained in this piece of waveform.
+    # For example, it might find:
+        # 200 Hz -> some energy
+        # 500 Hz -> lots of energy
 
-    # at 16kHz 1024 samples ÷ 16000 samples/sec = 0.064 seconds
-    # Our current configuration therefore analyses chunks of roughly 64 ms.
+    # But speech changes constantly -> we therefore don't analyse the whole 1.2 seconds at once.
+    # We chop it into lots of overlapping windows.
+
+    # win_length=400:
+        # 400 / 16000 = 0.025 seconds
+        # so each window contains 25 ms of actual speech.
+
+    # n_fft=512:
+        # the 400-sample window is analysed using a 512-point FFT.
+        # 512 gives us 257 useful frequency bins.
 
     # important trade-off:
         # larger window
@@ -60,21 +69,31 @@ TRIM_MARGIN_SAMPLES = int(
             # → poorer frequency detail
 
 # hop_length: How far should I move forward before analysing the next chunk?
-    # At 16kHz: 256 / 16000 = 0.016 seconds
-    # so 16ms -> the chucks overlap heavily ->
-    # without overlapping we could miss important transitions between sounds
-    # this is why the spectrogram ends up with around 75 time positions over the 1.2s recording.
+    # At 16kHz:
+        # 160 / 16000 = 0.010 seconds
+        # so 10 ms.
+
+    # The window itself is 25 ms long but we only move forward by 10 ms.
+    # This means the windows overlap heavily.
+    # Without overlapping we could miss important transitions between sounds.
+
+    # Over the 1.2-second recording this gives us around 121 time positions.
 
 # n_mels:
-    # Convert all those raw FFT frequency bins into 64 Mel-frequency bands.
-    # FTT of 1024 gives us 513 useful frequency bins
-    # so 513 frequency bins to 64 mel bands
-    # so the Mel scale compresses the frequency axis into
+    # Convert the 257 raw FFT frequency bins into 64 Mel-frequency bands.
+
+    # 257 frequency bins
+    #       ↓
+    # 64 Mel bands
+
+    # The Mel scale compresses the frequency axis into
     # something more aligned with human auditory perception.
 
 # 1   = audio channel
 # 64  = Mel frequency bands
-# 75  = moments in time
+# 121 = moments in time
+
+
 
 mel_transform = torchaudio.transforms.MelSpectrogram(
     sample_rate=SAMPLE_RATE,
@@ -105,8 +124,24 @@ db_transform = torchaudio.transforms.AmplitudeToDB()
 def load_wav(path):
     sample_rate, audio = read(path)
 
-    # audio is a numpy array containing the microphone measurements
-    # 1.2 seconds X 16,000 sample rate = 19,200 samples
+    # scipy keeps the original WAV data type.
+
+    # For example:
+        # our recordings:
+            # float32
+            # approximately -1.0 -> +1.0
+
+        # another dataset might use:
+            # int16
+            # -32768 -> +32767
+
+    # If we only converted int16 to float without scaling it,
+    # 32767 would simply become 32767.0.
+
+    # Our model expects audio approximately within:
+        # -1.0 -> +1.0
+
+    # So integer WAV files need to be normalised first.
 
     if sample_rate != SAMPLE_RATE:
         raise ValueError(
@@ -114,26 +149,85 @@ def load_wav(path):
             f"expected {SAMPLE_RATE}"
         )
 
-    # NumPy array -> torch.from_numpy() -> PyTorch Tensor
-    # .float() ensures the numbers are stored as 32-bit floating-point values
-    waveform = torch.from_numpy(audio).float()
+    if np.issubdtype(audio.dtype, np.signedinteger):
+        info = np.iinfo(audio.dtype)
 
-    # Pytorch audio tool expects audio in the format of
-    #   [channels, samples]
-    # for our mono audio that would be: [1, 19200]
-    # But WAV-reading libraries don't always return the dimensions in that format.
+        scale = max(
+            abs(float(info.min)),
+            abs(float(info.max)),
+        )
+
+        audio = (
+            audio.astype(np.float32)
+            / scale
+        )
+    elif np.issubdtype(audio.dtype, np.unsignedinteger):
+        # Some WAV formats such as 8-bit PCM use unsigned values.
+        # Their midpoint represents silence rather than 0.
+
+        info = np.iinfo(audio.dtype)
+
+        midpoint = (
+            float(info.max) + 1.0
+        ) / 2.0
+
+        audio = (
+            audio.astype(np.float32)
+            - midpoint
+        ) / midpoint
+
+    elif np.issubdtype(audio.dtype, np.floating):
+        # Our existing recordings already use floating-point audio.
+        audio = audio.astype(np.float32)
+
+    else:
+        raise TypeError(
+            f"{path} has unsupported audio dtype "
+            f"{audio.dtype}"
+        )
+
+    # NumPy array -> torch.from_numpy() -> PyTorch Tensor
+    waveform = torch.from_numpy(audio)
+
+    
+    # PyTorch expects:
+        # [channels, samples]
+
+    # scipy normally gives:
+        # mono -> [samples]
+        # stereo -> [samples, channels]
     
     if waveform.ndim == 1:
         # Case A: NumPy gives us this
         #   (19200,)
         # so waveform.unsqueeze(0) changes (19200,) -> (1, 19200)
         waveform = waveform.unsqueeze(0)
-    else:
+
+    elif waveform.ndim == 2:
         # Case B: NumPy gives us this
         #   (19200, 1) meaning [samples, channels]
         # TorchAudio wants: [channels, samples]
         # so waveform.transpose(0, 1) turns (19200, 1) into (1, 19200)
         waveform = waveform.transpose(0, 1)
+
+    else:
+        raise ValueError(
+            f"{path} has unexpected audio shape "
+            f"{tuple(waveform.shape)}"
+        )
+    
+    # Our CNN expects mono audio.
+    # If a WAV contains multiple channels, average them into one.
+    if waveform.shape[0] > 1:
+        waveform = waveform.mean(
+            dim=0,
+            keepdim=True,
+        )
+
+    waveform = waveform.clamp(
+        -1.0,
+        1.0,
+    )
 
     return waveform
 
