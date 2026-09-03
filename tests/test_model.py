@@ -1,9 +1,10 @@
 from ml.data_loaders import create_data_loaders
+from ml.dataset import CLASSES
 from ml.model import ArabicLetterCNN
 
 train_loader, _, _ = create_data_loaders()
 
-model = ArabicLetterCNN()
+model = ArabicLetterCNN(num_classes=len(CLASSES))
 
 spectrograms, labels = next(iter(train_loader))
 

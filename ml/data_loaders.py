@@ -9,6 +9,11 @@ RANDOM_SEED = 42
 TRAIN_PER_CLASS = 10
 VALIDATION_PER_CLASS = 3
 TEST_PER_CLASS = 2
+TOTAL_PER_CLASS = (
+    TRAIN_PER_CLASS
+    + VALIDATION_PER_CLASS
+    + TEST_PER_CLASS
+)
 
 
 def create_data_loaders(batch_size=4, augment_training=True):
@@ -69,21 +74,45 @@ def create_data_loaders(batch_size=4, augment_training=True):
             if label == class_index
         ]
 
+        if len(class_indices) != TOTAL_PER_CLASS:
+            raise ValueError(
+                f"{CLASSES[class_index]} has "
+                f"{len(class_indices)} recordings, "
+                f"expected {TOTAL_PER_CLASS}."
+            )
+
         rng.shuffle(class_indices)
 
-        # First TRAIN_PER_CLASS recordings -> training
+        train_end = TRAIN_PER_CLASS
 
-        train_indices.extend(class_indices[:TRAIN_PER_CLASS])
-
-        # Next VALIDATION_PER_CLASS recordings -> validation
-
-        validation_indices.extend(
-            class_indices[TRAIN_PER_CLASS : TRAIN_PER_CLASS + VALIDATION_PER_CLASS]
+        validation_end = (
+            train_end
+            + VALIDATION_PER_CLASS
         )
 
-        # Everything remaining -> test
+        test_end = (
+            validation_end
+            + TEST_PER_CLASS
+        )
 
-        test_indices.extend(class_indices[TRAIN_PER_CLASS + VALIDATION_PER_CLASS :])
+        # First TRAIN_PER_CLASS recordings -> training
+        train_indices.extend(
+            class_indices[:train_end]
+        )
+
+        # Next VALIDATION_PER_CLASS recordings -> validation
+        validation_indices.extend(
+            class_indices[
+                train_end:validation_end
+            ]
+        )
+
+        # Next TEST_PER_CLASS recordings -> test
+        test_indices.extend(
+            class_indices[
+                validation_end:test_end
+            ]
+        )
 
     train_dataset = Subset(training_source, train_indices)
     validation_dataset = Subset(evaluation_source, validation_indices)
@@ -103,8 +132,8 @@ def create_data_loaders(batch_size=4, augment_training=True):
     # Then the next batch is processed.
 
     # One complete pass through all training samples is called an epoch.
-    # 1 epoch = CNN has seen all 24 training samples once
-    # 50 epochs -> the network has gone through the training set 50 times, adjusting itself gradually.
+    # 1 epoch = CNN has seen all training samples once.
+    # Each new epoch means another complete pass through the training set.
 
     # The number of batches depends on:
         # number of training samples

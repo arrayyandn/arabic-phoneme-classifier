@@ -24,7 +24,7 @@ def main():
         batch_size=4
     )
 
-    model = ArabicLetterCNN()
+    model = ArabicLetterCNN(num_classes=len(CLASSES))
 
     model.load_state_dict(
         torch.load(

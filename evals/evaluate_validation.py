@@ -68,7 +68,7 @@ def main():
         for index in validation_subset.indices
     ]
 
-    model = ArabicLetterCNN()
+    model = ArabicLetterCNN(num_classes=len(CLASSES))
 
     model.load_state_dict(
         torch.load(

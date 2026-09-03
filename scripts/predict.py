@@ -71,7 +71,7 @@ def record_audio():
 def main():
     # Load trained neural network
 
-    model = ArabicLetterCNN()
+    model = ArabicLetterCNN(num_classes=len(CLASSES))
 
     model.load_state_dict(
         torch.load(
@@ -133,7 +133,7 @@ def main():
 
     probabilities = probabilities[0]
 
-    predicted_index = probabilities.argmax().item()
+    predicted_index: int = int(probabilities.argmax().item())
     predicted_class = CLASSES[predicted_index]
 
     # Display results

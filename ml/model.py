@@ -11,7 +11,7 @@ from torch import nn
 # - switch between training/evaluation modes.
 
 class ArabicLetterCNN(nn.Module):
-    def __init__(self, num_classes=6):
+    def __init__(self, num_classes: int):
         super().__init__()
 
         # nn.Sequential:

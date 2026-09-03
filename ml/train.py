@@ -5,12 +5,13 @@ import torch
 from torch import nn
 
 from ml.data_loaders import create_data_loaders
+from ml.dataset import CLASSES
 from ml.model import ArabicLetterCNN
 
 MAX_EPOCHS = 200
 LEARNING_RATE = 0.001
 USE_AUGMENTATION = True
-EARLY_STOPPING_PATIENCE = 301.
+EARLY_STOPPING_PATIENCE = 30
 MODEL_FILE = Path(
     "models/latest/arabic_letter_cnn.pt"
 )
@@ -48,7 +49,7 @@ def main():
         augment_training=USE_AUGMENTATION
     )
 
-    model = ArabicLetterCNN()
+    model = ArabicLetterCNN(num_classes=len(CLASSES))
 
     # CrossEntropyLoss:
         # How wrong was the network
