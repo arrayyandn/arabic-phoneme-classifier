@@ -3,21 +3,11 @@ from sklearn.metrics import confusion_matrix
 from torch.utils.data import Subset
 
 from ml.data_loaders import create_data_loaders
-from ml.dataset import CLASSES, ArabicLetterDataset
+from ml.dataset import ArabicLetterDataset
+from ml.labels import ARABIC_LABELS, CLASSES
 from ml.model import ArabicLetterCNN
 
 MODEL_FILE = "models/latest/arabic_letter_cnn.pt"
-
-
-ARABIC = {
-    "qaf": "قَ",
-    "kaf": "كَ",
-    "ta": "تَ",
-    "taa_emphatic": "طَ",
-    "sin": "سَ",
-    "sad": "صَ",
-}
-
 
 def main():
     # We deliberately use the VALIDATION set here.
@@ -86,7 +76,7 @@ def main():
 
     with torch.no_grad():
         for spectrograms, labels in validation_loader:
-            # Ask the saved model for its six logits.
+            # Ask the saved model for its class logits.
             outputs = model(spectrograms)
 
             # Convert those logits into probabilities which
@@ -155,13 +145,13 @@ def main():
 
         print(
             f"Actual:    "
-            f"{ARABIC[actual_name]} "
+            f"{ARABIC_LABELS[actual_name]} "
             f"({actual_name})"
         )
 
         print(
             f"Predicted: "
-            f"{ARABIC[predicted_name]} "
+            f"{ARABIC_LABELS[predicted_name]} "
             f"({predicted_name})"
         )
 
@@ -170,7 +160,7 @@ def main():
         for class_index, class_name in enumerate(CLASSES):
             print(
                 f"    "
-                f"{ARABIC[class_name]} "
+                f"{ARABIC_LABELS[class_name]} "
                 f"{class_name:<12} "
                 f"{probabilities[class_index]:6.2%}"
             )
@@ -217,7 +207,7 @@ def main():
     print("Class mapping:")
 
     for index, class_name in enumerate(CLASSES):
-        print(f"{index} = {ARABIC[class_name]} ({class_name})")
+        print(f"{index} = {ARABIC_LABELS[class_name]} ({class_name})")
 
 
 if __name__ == "__main__":

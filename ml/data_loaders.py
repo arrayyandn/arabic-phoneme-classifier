@@ -2,7 +2,8 @@ import random
 
 from torch.utils.data import DataLoader, Subset
 
-from ml.dataset import CLASSES, ArabicLetterDataset
+from ml.dataset import ArabicLetterDataset
+from ml.labels import CLASSES
 
 RANDOM_SEED = 42
 

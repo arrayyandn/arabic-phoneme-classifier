@@ -3,20 +3,10 @@ from sklearn.metrics import confusion_matrix
 from torch import nn
 
 from ml.data_loaders import create_data_loaders
-from ml.dataset import CLASSES
+from ml.labels import ARABIC_LABELS, CLASSES
 from ml.model import ArabicLetterCNN
 
 MODEL_FILE = "models/latest/arabic_letter_cnn.pt"
-
-ARABIC = {
-    "qaf": "قَ",
-    "kaf": "كَ",
-    "ta": "تَ",
-    "taa_emphatic": "طَ",
-    "sin": "سَ",
-    "sad": "صَ",
-}
-
 
 def main():
     # We deliberately ignore the training and validation loaders here.
@@ -106,9 +96,9 @@ def main():
 
         print(
             f"{result} "
-            f"Actual: {ARABIC[actual_name]} "
+            f"Actual: {ARABIC_LABELS[actual_name]} "
             f"({actual_name:<12}) "
-            f"Predicted: {ARABIC[predicted_name]} "
+            f"Predicted: {ARABIC_LABELS[predicted_name]} "
             f"({predicted_name})"
         )
 
@@ -148,7 +138,7 @@ def main():
     for index, class_name in enumerate(CLASSES):
         print(
             f"{index} = "
-            f"{ARABIC[class_name]} "
+            f"{ARABIC_LABELS[class_name]} "
             f"({class_name})"
         )
 

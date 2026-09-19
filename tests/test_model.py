@@ -1,5 +1,5 @@
 from ml.data_loaders import create_data_loaders
-from ml.dataset import CLASSES
+from ml.labels import CLASSES
 from ml.model import ArabicLetterCNN
 
 train_loader, _, _ = create_data_loaders()

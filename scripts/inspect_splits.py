@@ -5,19 +5,8 @@ from ml.data_loaders import (
     TRAIN_PER_CLASS,
     VALIDATION_PER_CLASS,
 )
-from ml.dataset import (
-    CLASSES,
-    ArabicLetterDataset,
-)
-
-ARABIC = {
-    "qaf": "قَ",
-    "kaf": "كَ",
-    "ta": "تَ",
-    "taa_emphatic": "طَ",
-    "sin": "سَ",
-    "sad": "صَ",
-}
+from ml.dataset import ArabicLetterDataset
+from ml.labels import ARABIC_LABELS, CLASSES
 
 
 def main():
@@ -49,7 +38,7 @@ def main():
 
         print()
         print("=" * 50)
-        print(f"{ARABIC[class_name]} ({class_name})")
+        print(f"{ARABIC_LABELS[class_name]} ({class_name})")
         print("=" * 50)
 
         print()

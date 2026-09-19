@@ -12,24 +12,13 @@ from ml.audio_processing import (
     trim_and_center_waveform,
     waveform_to_mel,
 )
-from ml.dataset import CLASSES
+from ml.labels import ARABIC_LABELS, CLASSES
 from ml.model import ArabicLetterCNN
 
 MODEL_FILE = Path("models/latest/arabic_letter_cnn.pt")
 RECORDING_FILE = Path("outputs/audio/prediction.wav")
 
 DURATION = TARGET_DURATION
-
-
-ARABIC = {
-    "qaf": "قَ",
-    "kaf": "كَ",
-    "ta": "تَ",
-    "taa_emphatic": "طَ",
-    "sin": "سَ",
-    "sad": "صَ",
-}
-
 
 def record_audio():
     input("Press Enter when ready...")
@@ -90,7 +79,12 @@ def main():
     print("------------------------")
     print()
     print("Pronounce one of:")
-    print("قَ  كَ  تَ  طَ  سَ  صَ")
+    print(
+        "  ".join(
+            ARABIC_LABELS[class_name]
+            for class_name in CLASSES
+        )
+    )
     print()
 
     record_audio()
@@ -146,7 +140,7 @@ def main():
         probability = probabilities[index].item()
 
         print(
-            f"{ARABIC[class_name]} "
+            f"{ARABIC_LABELS[class_name]} "
             f"({class_name:<12}) "
             f"{probability:6.2%}"
         )

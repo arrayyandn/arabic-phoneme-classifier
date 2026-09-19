@@ -8,18 +8,9 @@ from ml.audio_processing import (
     trim_and_center_waveform,
     waveform_to_mel,
 )
+from ml.labels import CLASSES
 
 DATA_DIR = Path("data/original")
-
-CLASSES = [
-    "qaf",
-    "kaf",
-    "ta",
-    "taa_emphatic",
-    "sin",
-    "sad",
-]
-
 
 class ArabicLetterDataset(Dataset):
     def __init__(self, dat_dir: Path = DATA_DIR, augment: bool = False):
