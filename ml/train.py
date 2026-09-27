@@ -4,16 +4,18 @@ from pathlib import Path
 import torch
 from torch import nn
 
-from ml.data_loaders import create_data_loaders
-from ml.labels import CLASSES
+from ml.asv_fatha_data_loaders import create_asv_fatha_data_loaders
+from ml.fatha_labels import FATHA_CLASSES
 from ml.model import ArabicLetterCNN
 
-MAX_EPOCHS = 200
+MAX_EPOCHS = 500
 LEARNING_RATE = 0.001
 USE_AUGMENTATION = True
-EARLY_STOPPING_PATIENCE = 30
+EARLY_STOPPING_PATIENCE = 100
+DROPOUT_P = 0.0
 MODEL_FILE = Path(
-    "models/latest/arabic_letter_cnn.pt"
+    "models/checkpoints/"
+    "asv_fatha_28_baseline.pt"
 )
 
 
@@ -44,12 +46,12 @@ def main():
 
     torch.manual_seed(42)
 
-    train_loader, validation_loader, _ = create_data_loaders(
-        batch_size=4,
+    train_loader, validation_loader, _= create_asv_fatha_data_loaders(
+        batch_size=16,
         augment_training=USE_AUGMENTATION
     )
 
-    model = ArabicLetterCNN(num_classes=len(CLASSES))
+    model = ArabicLetterCNN(num_classes=len(FATHA_CLASSES), dropout_p=DROPOUT_P)
 
     # CrossEntropyLoss:
         # How wrong was the network
@@ -131,6 +133,7 @@ def main():
     epochs_without_improvement = 0
 
     print(f"Data augmentation: {USE_AUGMENTATION}")
+    print(f"Dropout: {DROPOUT_P}")
     print("Training Arabic Letter CNN")
     print("--------------------------")
     print(f"Maximum epochs: {MAX_EPOCHS}")

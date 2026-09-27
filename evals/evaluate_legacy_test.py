@@ -6,7 +6,7 @@ from ml.data_loaders import create_data_loaders
 from ml.labels import ARABIC_LABELS, CLASSES
 from ml.model import ArabicLetterCNN
 
-MODEL_FILE = "models/latest/arabic_letter_cnn.pt"
+MODEL_FILE = "models/checkpoints/six_class_dropout_030.pt"
 
 def main():
     # We deliberately ignore the training and validation loaders here.

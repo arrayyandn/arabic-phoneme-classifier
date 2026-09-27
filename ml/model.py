@@ -11,7 +11,7 @@ from torch import nn
 # - switch between training/evaluation modes.
 
 class ArabicLetterCNN(nn.Module):
-    def __init__(self, num_classes: int):
+    def __init__(self, num_classes: int, dropout_p: float = 0.0,):
         super().__init__()
 
         # nn.Sequential:
@@ -178,15 +178,41 @@ class ArabicLetterCNN(nn.Module):
                 out_features=num_classes,  # 6
             ),
         )
+        # Dropout has no trainable weights of its own.
+        
+        # Keeping it outside self.classifier means that our existing
+        # checkpoints remain compatible:
+        
+        # classifier.0 = first Linear layer
+        # classifier.2 = final Linear layer
 
+        self.dropout = nn.Dropout(
+            p=dropout_p
+        )
 
     def forward(self, x):
         x = self.features(x)
-
+        
         x = self.global_pool(x)
 
         x = torch.flatten(x, start_dim=1)
 
-        x = self.classifier(x)
+        x = self.dropout(x)
+
+        # First Linear layer:
+        # 512 features -> 64 hidden features
+        x = self.classifier[0](x)
+
+        # ReLU
+        x = self.classifier[1](x)
+
+        # During training, randomly disable some hidden features.
+        
+        # During model.eval(), PyTorch automatically disables Dropout.
+        x = self.dropout(x)
+
+        # Final Linear layer:
+        # 64 hidden features -> class logits
+        x = self.classifier[2](x)
 
         return x
