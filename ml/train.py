@@ -289,8 +289,11 @@ def main():
 
             # Take a frozen copy of the weights from THIS epoch.
             
-            # deepcopy is necessary because training will continue
-            # modifying the model's actual weights afterwards.
+            # Copy the best weights to CPU so the checkpoint remains
+            # portable regardless of which device is used for training.
+            
+            # clone() gives us an independent copy because training will
+            # continue modifying the model's live weights afterwards.
             best_model_state = {
                 name: tensor.detach().cpu().clone()
                 for name, tensor
