@@ -1,10 +1,10 @@
-import copy
 from pathlib import Path
 
 import torch
 from torch import nn
 
 from ml.asv_fatha_data_loaders import create_asv_fatha_data_loaders
+from ml.device import get_device
 from ml.fatha_labels import FATHA_CLASSES
 from ml.model import ArabicLetterCNN
 
@@ -14,11 +14,11 @@ USE_AUGMENTATION = True
 EARLY_STOPPING_PATIENCE = 100
 DROPOUT_P = 0.0
 USE_BATCH_NORM = True
+DEVICE_BACKEND = "auto"
 MODEL_FILE = Path(
     "models/checkpoints/"
     "asv_fatha_28_batchnorm.pt"
 )
-
 
 def calculate_accuracy(outputs, labels):
     predictions = outputs.argmax(dim=1) 
@@ -47,6 +47,10 @@ def main():
 
     torch.manual_seed(42)
 
+    device, device_name = get_device(
+        DEVICE_BACKEND
+    )
+
     train_loader, validation_loader, _ = create_asv_fatha_data_loaders(
         batch_size=16,
         augment_training=USE_AUGMENTATION
@@ -54,19 +58,18 @@ def main():
 
     model = ArabicLetterCNN(num_classes=len(FATHA_CLASSES), dropout_p=DROPOUT_P, use_batch_norm=USE_BATCH_NORM)
 
+    model = model.to(device)
+
     # CrossEntropyLoss:
         # How wrong was the network
 
-        # Our network outputs six logits:
-            # qaf           0.2
-            # kaf          -0.4
-            # ta            0.8
-            # taa_emphatic  1.4
-            # sin          -0.1
-            # sad           0.3
-
-        # suppose the actual answer was: label = 2 i.e تَ
-        # But the network's largest score was: class 3 → طَ
+        # Our network outputs one logit for each class.
+        
+        # With 28 classes:
+        #     output shape = [batch_size, 28]
+        
+        # A larger logit means the model currently considers
+        # that class more likely than classes with lower logits.
 
         # Cross-entropy gives us a number representing how bad that prediction was.
         # CrossEntropyLoss is specifically designed to take unnormalized logits
@@ -137,6 +140,7 @@ def main():
 
     epochs_without_improvement = 0
 
+    print(f"Device: {device_name} ({device})")
     print(f"Data augmentation: {USE_AUGMENTATION}")
     print(f"Dropout: {DROPOUT_P}")
     print(f"Batch normalization: {USE_BATCH_NORM}")
@@ -156,6 +160,8 @@ def main():
         training_samples = 0
 
         for spectrograms, labels in train_loader:
+            spectrograms = spectrograms.to(device)
+            labels = labels.to(device)
 
             # NN training for one batch is simply:
 
@@ -241,6 +247,8 @@ def main():
 
         with torch.no_grad():
             for spectrograms, labels in validation_loader:
+                spectrograms = spectrograms.to(device)
+                labels = labels.to(device)
 
                 outputs = model(spectrograms)
 
@@ -283,9 +291,11 @@ def main():
             
             # deepcopy is necessary because training will continue
             # modifying the model's actual weights afterwards.
-            best_model_state = copy.deepcopy(
-                model.state_dict()
-            )
+            best_model_state = {
+                name: tensor.detach().cpu().clone()
+                for name, tensor
+                in model.state_dict().items()
+            }
 
             # Because validation improved, early stopping gets
             # a fresh start.
