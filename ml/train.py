@@ -13,9 +13,10 @@ LEARNING_RATE = 0.001
 USE_AUGMENTATION = True
 EARLY_STOPPING_PATIENCE = 100
 DROPOUT_P = 0.0
+USE_BATCH_NORM = True
 MODEL_FILE = Path(
     "models/checkpoints/"
-    "asv_fatha_28_baseline.pt"
+    "asv_fatha_28_batchnorm.pt"
 )
 
 
@@ -51,7 +52,7 @@ def main():
         augment_training=USE_AUGMENTATION
     )
 
-    model = ArabicLetterCNN(num_classes=len(FATHA_CLASSES), dropout_p=DROPOUT_P)
+    model = ArabicLetterCNN(num_classes=len(FATHA_CLASSES), dropout_p=DROPOUT_P, use_batch_norm=USE_BATCH_NORM)
 
     # CrossEntropyLoss:
         # How wrong was the network
@@ -138,6 +139,7 @@ def main():
 
     print(f"Data augmentation: {USE_AUGMENTATION}")
     print(f"Dropout: {DROPOUT_P}")
+    print(f"Batch normalization: {USE_BATCH_NORM}")
     print("Training Arabic Letter CNN")
     print("--------------------------")
     print(f"Maximum epochs: {MAX_EPOCHS}")

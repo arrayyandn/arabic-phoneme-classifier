@@ -15,6 +15,7 @@ class ArabicLetterCNN(nn.Module):
         self,
         num_classes: int,
         dropout_p: float = 0.0,
+        use_batch_norm: bool = False
     ):
         super().__init__()
 
@@ -31,13 +32,21 @@ class ArabicLetterCNN(nn.Module):
             # Pass x through these layers in order.
 
 
-        self.features = nn.Sequential(
+        feature_layers: list[nn.Module] = [
             nn.Conv2d(
                 in_channels=1,  # input: 1 × 64 × 121
                 out_channels=16,  # output: 16 feature maps
                 kernel_size=3,
                 padding=1,
             ),
+        ]
+
+        if use_batch_norm:
+            feature_layers.append(
+                nn.BatchNorm2d(16)
+            )
+
+        feature_layers.extend([
             # ReLU:
                 # negative number → 0
                 # positive number → keep it
@@ -45,16 +54,28 @@ class ArabicLetterCNN(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(2),  # After pooling: 16 × 32 × 60
 
-            # second convolution examines those 16 learned feature maps
-            # and creates 32 more sophisticated one
+            # Second convolution examines those 16 learned feature maps
+            # and creates 32 more sophisticated ones.
             nn.Conv2d(
-                in_channels=16, 
+                in_channels=16,
                 out_channels=32,
                 kernel_size=3,
-                padding=1
-                ),
+                padding=1,
+            ),
+        ])
+
+        if use_batch_norm:
+            feature_layers.append(
+                nn.BatchNorm2d(32)
+            )
+
+        feature_layers.extend([
             nn.ReLU(),
-            nn.MaxPool2d(2),  # After pooling 32 x 16 x 30
+            nn.MaxPool2d(2),  # After pooling: 32 × 16 × 30
+        ])
+
+        self.features = nn.Sequential(
+            *feature_layers
         )
 
         # AdaptiveAvgPool2d((4, 4)):
