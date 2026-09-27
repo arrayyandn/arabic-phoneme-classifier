@@ -46,7 +46,7 @@ def main():
 
     torch.manual_seed(42)
 
-    train_loader, validation_loader, _= create_asv_fatha_data_loaders(
+    train_loader, validation_loader, _ = create_asv_fatha_data_loaders(
         batch_size=16,
         augment_training=USE_AUGMENTATION
     )
@@ -71,7 +71,7 @@ def main():
         # CrossEntropyLoss is specifically designed to take unnormalized logits
 
         # Initially you might see something around: loss ≈ 1.8
-        # probability each ≈ 1/6 -> -ln(1/6) ≈ 1.79 (ln = natural log)
+        # probability each ≈ 1/num_classes -> -ln(1/num_classes) ≈ 3.33 if num_classes = 28 (ln = natural log)
 
         # As it learns, hopefully we'll see:
             # 1.79

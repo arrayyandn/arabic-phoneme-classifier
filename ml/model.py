@@ -11,7 +11,11 @@ from torch import nn
 # - switch between training/evaluation modes.
 
 class ArabicLetterCNN(nn.Module):
-    def __init__(self, num_classes: int, dropout_p: float = 0.0,):
+    def __init__(
+            self,
+            num_classes: int,
+            dropout_p: float = 0.0,
+        ):
         super().__init__()
 
         # nn.Sequential:
@@ -128,7 +132,7 @@ class ArabicLetterCNN(nn.Module):
                 #      ↓
                 # Linear layer
                 #      ↓
-                # 6 output logits
+                # num_classes output logits
 
             # First Linear layer:
                 # nn.Linear(512, 64)
@@ -175,7 +179,7 @@ class ArabicLetterCNN(nn.Module):
             nn.ReLU(),
             nn.Linear(
                 in_features=64,
-                out_features=num_classes,  # 6
+                out_features=num_classes,
             ),
         )
         # Dropout has no trainable weights of its own.
@@ -196,8 +200,6 @@ class ArabicLetterCNN(nn.Module):
         x = self.global_pool(x)
 
         x = torch.flatten(x, start_dim=1)
-
-        x = self.dropout(x)
 
         # First Linear layer:
         # 512 features -> 64 hidden features
