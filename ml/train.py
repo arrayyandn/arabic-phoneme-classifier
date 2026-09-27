@@ -69,20 +69,24 @@ def main():
 
         # Cross-entropy gives us a number representing how bad that prediction was.
         # CrossEntropyLoss is specifically designed to take unnormalized logits
+        # Example of how loss might change during training:
+        #     1.80
+        #     1.62
+        #     1.39
+        #     1.07
+        #     0.73
+        #     0.41
 
-        # Initially you might see something around: loss ≈ 1.8
-        # probability each ≈ 1/num_classes -> -ln(1/num_classes) ≈ 3.33 if num_classes = 28 (ln = natural log)
+        # These values are only an illustrative example.
+        # Lower is better.
 
-        # As it learns, hopefully we'll see:
-            # 1.79
-            # 1.62
-            # 1.39
-            # 1.07
-            # 0.73
-            # 0.41
-            # ...
-
-            # Lower is better.
+        # If the model initially predicts every class about equally,
+        # expected cross-entropy is approximately:
+        
+        #     -ln(1 / num_classes)
+        
+        # For 28 classes:
+        #     -ln(1 / 28) ≈ 3.33
 
     loss_function = nn.CrossEntropyLoss() 
 

@@ -12,10 +12,10 @@ from torch import nn
 
 class ArabicLetterCNN(nn.Module):
     def __init__(
-            self,
-            num_classes: int,
-            dropout_p: float = 0.0,
-        ):
+        self,
+        num_classes: int,
+        dropout_p: float = 0.0,
+    ):
         super().__init__()
 
         # nn.Sequential:
@@ -158,15 +158,10 @@ class ArabicLetterCNN(nn.Module):
                 # positive value → keep it
 
             # The final Linear layer:
-                # nn.Linear(64, 6)
+                # nn.Linear(64, num_classes)
 
-            # converts those 64 learned hidden features into 6 logits:
-                # 0 → qaf
-                # 1 → kaf
-                # 2 → ta
-                # 3 → taa_emphatic
-                # 4 → sin
-                # 5 → sad
+            # converts those 64 learned hidden features into
+            # one output logit for each class.
 
             # The logits are NOT probabilities.
             # During training, CrossEntropyLoss works directly with them.
